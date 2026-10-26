@@ -168,4 +168,3 @@ The response can include the chatbot reply, predicted intent, and confidence sco
 - Improve intent classification with additional training examples and evaluation.
 - Implement secure user authentication and persistent storage.
 - Deploy the frontend and backend for public access.
-- Add automated tests for API endpoints and eligibility rules.
