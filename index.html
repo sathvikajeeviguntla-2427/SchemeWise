@@ -830,7 +830,7 @@ document.getElementById('check-btn').addEventListener('click', async () => {
   document.getElementById('success-msg').style.display = 'none';
 
   try {
-    const response = await fetch('http://127.0.0.1:5000/check', {
+    const response = await fetch('https://schemewise-1.onrender.com/check', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ age, income, category, occupation })
@@ -877,7 +877,7 @@ document.getElementById('check-btn').addEventListener('click', async () => {
     renderFiltered();
   } catch (error) {
     console.error('Eligibility check failed:', error);
-    area.innerHTML = `<div class="no-results"><div class="nr-icon">⚠️</div><h3>Could not check eligibility</h3><p>${escapeHtml(error.message)}<br>Make sure Flask is running at http://127.0.0.1:5000.</p></div>`;
+    area.innerHTML = `<div class="no-results"><div class="nr-icon">⚠️</div><h3>Could not check eligibility</h3><p>${escapeHtml(error.message)}<br>Make sure Flask is running at https://schemewise-1.onrender.com.</p></div>`;
   } finally {
     btn.disabled = false;
     btn.textContent = '🔍 Check Eligibility';
@@ -975,7 +975,7 @@ async function sendMessage(text) {
 
   try {
     const response = await fetch(
-      "http://127.0.0.1:5000/chat",
+      "https://schemewise-1.onrender.com/chat",
       {
         method: "POST",
         headers: {
