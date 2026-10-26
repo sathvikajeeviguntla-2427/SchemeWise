@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SchemeWise – Government Scheme Eligibility</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy: #0d1b2a; --navy2: #1b2d3e; --navy3: #253d52;
+  --blue: #2563eb; --blue2: #1d4ed8; --blue3: #3b82f6; --blue-soft: #dbeafe;
+  --teal: #0ea5e9; --teal2: #0284c7;
+  --green: #10b981; --green-bg: #d1fae5; --green-dark: #065f46;
+  --amber: #f59e0b; --amber-bg: #fef3c7; --amber-dark: #92400e;
+  --red: #ef4444; --red-bg: #fee2e2;
+  --surface: #f8fafc; --border: #e2e8f0;
+  --muted: #64748b; --slate: #475569; --light: #94a3b8;
+  --white: #ffffff;
+  --shadow: 0 4px 24px rgba(13,27,42,.12);
+  --shadow-lg: 0 8px 40px rgba(13,27,42,.18);
+}
+html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: #f1f5f9; color: #1e293b; }
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+
+/* LOGIN */
+#login-page {
+  position: fixed; inset: 0;
+  background: linear-gradient(135deg, #0d1b2a 0%, #1b3a5c 50%, #0d1b2a 100%);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999;
+}
+#login-page::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 20% 50%, rgba(37,99,235,.2) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 20%, rgba(14,165,233,.15) 0%, transparent 50%);
+  pointer-events: none;
+}
+.login-card {
+  background: rgba(255,255,255,.04); backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,.1); border-radius: 24px;
+  padding: 36px 40px 32px; width: 430px; position: relative; z-index: 1;
+  box-shadow: 0 24px 80px rgba(0,0,0,.4);
+}
+.login-logo {
+  font-family: 'Sora', sans-serif; font-size: 26px; font-weight: 800; color: #fff;
+  display: flex; align-items: center; gap: 10px; margin-bottom: 6px;
+}
+.login-logo .logo-icon {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, var(--blue), var(--teal));
+  border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px;
+}
+.login-sub { font-size: 13px; color: rgba(255,255,255,.45); margin-bottom: 22px; }
+
+/* Auth tabs */
+.auth-tabs { display: flex; background: rgba(255,255,255,.06); border-radius: 10px; padding: 3px; margin-bottom: 22px; }
+.auth-tab { flex: 1; text-align: center; padding: 8px; font-size: 13px; font-weight: 600; color: rgba(255,255,255,.45); border-radius: 8px; cursor: pointer; font-family: 'Sora', sans-serif; transition: all .2s; border: none; background: none; }
+.auth-tab.active { background: rgba(37,99,235,.55); color: #fff; box-shadow: 0 2px 8px rgba(37,99,235,.3); }
+
+.login-label { display: block; font-size: 11px; font-weight: 500; color: rgba(255,255,255,.45); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 6px; margin-top: 16px; }
+.pw-wrap { position: relative; }
+.login-input { width: 100%; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 10px; color: #fff; font-size: 14px; padding: 12px 14px; outline: none; font-family: 'DM Sans', sans-serif; transition: border-color .15s, background .15s; }
+.login-input:focus { border-color: var(--blue3); background: rgba(255,255,255,.09); }
+.login-input::placeholder { color: rgba(255,255,255,.22); }
+.pw-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: rgba(255,255,255,.35); cursor: pointer; font-size: 16px; line-height: 1; padding: 2px; }
+.pw-toggle:hover { color: rgba(255,255,255,.65); }
+
+.login-btn { width: 100%; margin-top: 22px; background: linear-gradient(135deg, var(--blue), var(--teal)); color: #fff; border: none; border-radius: 11px; padding: 14px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: 'Sora', sans-serif; transition: opacity .15s, transform .1s; }
+.login-btn:hover { opacity: .9; transform: translateY(-1px); }
+.login-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+.login-error { color: #fca5a5; font-size: 12px; margin-top: 10px; display: none; text-align: center; }
+.login-success { color: #6ee7b7; font-size: 12px; margin-top: 10px; display: none; text-align: center; }
+
+
+/* APP */
+#app { display: none; height: 100vh; flex-direction: column; overflow: hidden; }
+#app.visible { display: flex; }
+
+/* TOPNAV */
+.topnav { background: var(--navy); height: 56px; min-height: 56px; display: flex; align-items: center; padding: 0 20px; gap: 14px; border-bottom: 1px solid var(--navy3); flex-shrink: 0; position: relative; z-index: 100; }
+.nav-logo { font-family: 'Sora', sans-serif; font-size: 17px; font-weight: 800; color: #f0f9ff; display: flex; align-items: center; gap: 8px; }
+.nl-icon { width: 30px; height: 30px; background: linear-gradient(135deg, var(--blue), var(--teal)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.nav-spacer { flex: 1; }
+.nav-tabs { display: flex; gap: 3px; }
+.nav-tab { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 500; color: var(--light); padding: 6px 12px; border-radius: 8px; cursor: pointer; border: none; background: none; font-family: 'DM Sans', sans-serif; transition: background .15s, color .15s; position: relative; }
+.nav-tab:hover { background: rgba(255,255,255,.06); color: #fff; }
+.nav-tab.active { background: rgba(37,99,235,.2); color: var(--blue3); }
+.nav-badge { background: var(--red); color: #fff; font-size: 9px; font-weight: 700; width: 15px; height: 15px; border-radius: 50%; display: none; align-items: center; justify-content: center; }
+.nav-badge.show { display: flex; }
+.nav-user { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--light); }
+.nav-avatar { width: 30px; height: 30px; background: linear-gradient(135deg, var(--blue), var(--teal)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #fff; font-weight: 600; }
+.logout-btn { font-size: 11px; color: var(--muted); background: none; border: 1px solid var(--navy3); border-radius: 6px; padding: 4px 10px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: border-color .15s, color .15s; }
+.logout-btn:hover { border-color: var(--red); color: var(--red); }
+
+/* APP BODY */
+.app-body { display: flex; flex: 1; overflow: hidden; }
+
+/* SIDEBAR */
+.sidebar { width: 228px; min-width: 228px; background: var(--navy); display: flex; flex-direction: column; overflow-y: auto; border-right: 1px solid var(--navy3); }
+.sb-section { padding: 16px 16px 0; }
+.sb-heading { font-size: 11px; font-weight: 500; color: #94a3b8; letter-spacing: .05em; margin-bottom: 10px; margin-top: 2px; text-transform: uppercase; }
+label.sb-label { display: block; font-size: 10px; color: var(--light); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 5px; margin-top: 12px; }
+.sb-input { width: 100%; background: var(--navy2); border: 1px solid var(--navy3); border-radius: 8px; color: #e2e8f0; font-size: 12px; padding: 8px 10px; outline: none; font-family: 'DM Sans', sans-serif; transition: border-color .15s; }
+.sb-input:focus { border-color: var(--blue); }
+input[type=range].sb-slider { width: 100%; accent-color: var(--blue); margin-top: 4px; }
+.slider-val { font-size: 11px; color: #93c5fd; margin-top: 3px; }
+.sb-btn { display: block; width: calc(100% - 32px); margin: 16px 16px 0; background: linear-gradient(135deg, var(--blue), var(--teal2)); color: #fff; border: none; border-radius: 10px; padding: 11px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Sora', sans-serif; transition: opacity .15s; }
+.sb-btn:hover { opacity: .88; }
+.sb-divider { border: none; border-top: 1px solid var(--navy3); margin: 16px 0 0; }
+.sb-filter { padding: 12px 16px; }
+.sb-chip { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--light); margin-bottom: 7px; cursor: pointer; }
+.sb-chip input { accent-color: var(--blue); width: 13px; height: 13px; }
+.sb-footer { margin-top: auto; padding: 14px 16px; font-size: 10px; color: #475569; border-top: 1px solid var(--navy3); line-height: 1.6; }
+
+/* MAIN */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.hero { background: linear-gradient(110deg, #1e3a5f 0%, #0f4c81 65%, #1a5276 100%); padding: 18px 24px; border-bottom: 1px solid #1e4976; flex-shrink: 0; }
+.hero-title { font-family: 'Sora', sans-serif; font-size: 1.2rem; font-weight: 700; color: #f0f9ff; }
+.hero-sub { font-size: 12px; color: #93c5fd; margin-top: 3px; }
+.content { display: flex; flex: 1; overflow: hidden; }
+.col-left { flex: 1.2; padding: 16px 18px; overflow-y: auto; background: var(--surface); border-right: 1px solid var(--border); }
+.col-right { flex: 0.85; padding: 16px 18px; overflow-y: auto; background: var(--white); display: flex; flex-direction: column; }
+
+/* PANELS */
+.panel { display: none; flex: 1; flex-direction: column; padding: 20px 24px; overflow-y: auto; background: var(--surface); }
+.panel.active { display: flex; }
+.panel-title { font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+.panel-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+.empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px; }
+.empty-icon { font-size: 46px; margin-bottom: 12px; }
+.empty-title { font-family: 'Sora', sans-serif; font-size: 16px; color: #334155; margin-bottom: 6px; }
+.empty-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+/* STATS */
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+.stat { background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+.stat-n { font-family: 'Sora', sans-serif; font-size: 1.4rem; font-weight: 700; color: #1d4ed8; display: block; }
+.stat-l { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.success-bar { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 9px; padding: 8px 14px; font-size: 12px; color: var(--green-dark); margin-bottom: 14px; }
+
+/* SCHEME CARD */
+.scheme-card { background: var(--white); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; position: relative; transition: box-shadow .2s, transform .15s; }
+.scheme-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+.card-actions { position: absolute; top: 12px; right: 12px; display: flex; align-items: center; gap: 5px; }
+.wishlist-btn { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 4px 8px; font-size: 13px; cursor: pointer; transition: all .15s; line-height: 1; }
+.wishlist-btn:hover, .wishlist-btn.saved { border-color: var(--amber); background: var(--amber-bg); }
+.apply-action-btn { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 4px 9px; font-size: 10px; font-weight: 600; cursor: pointer; color: var(--blue); font-family: 'DM Sans', sans-serif; transition: all .15s; white-space: nowrap; }
+.apply-action-btn:hover { background: var(--blue-soft); border-color: #93c5fd; }
+.apply-action-btn.applied { background: var(--green-bg); border-color: #86efac; color: var(--green-dark); }
+.sc-title { font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; color: #1e293b; margin-bottom: 5px; padding-right: 165px; }
+.sc-desc { font-size: 12px; color: var(--slate); line-height: 1.55; margin-bottom: 10px; }
+.badges { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+.badge { font-size: 10px; font-weight: 500; padding: 3px 9px; border-radius: 20px; }
+.b-cat { background: var(--blue-soft); color: #1e40af; }
+.b-min { background: #f0fdf4; color: #166534; }
+.b-ben { background: var(--amber-bg); color: var(--amber-dark); }
+.criteria { display: flex; flex-wrap: wrap; gap: 6px; }
+.crit { background: var(--surface); border: 1px solid var(--border); border-radius: 7px; font-size: 10px; color: var(--muted); padding: 3px 9px; }
+.expand-btn { display: inline-flex; align-items: center; gap: 5px; margin-top: 10px; font-size: 11px; font-weight: 500; color: var(--blue); background: var(--blue-soft); border: 1px solid #bfdbfe; border-radius: 7px; padding: 5px 10px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background .15s; }
+.expand-btn:hover { background: #bfdbfe; }
+
+/* DETAIL PANEL */
+.detail-panel { display: none; margin-top: 12px; background: var(--surface); border-radius: 10px; padding: 14px 16px; border: 1px solid var(--border); }
+.detail-panel.open { display: block; }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.detail-item .dk { font-size: 10px; color: var(--muted); margin-bottom: 2px; text-transform: uppercase; letter-spacing: .05em; }
+.detail-item .dv { font-size: 12px; color: #1e293b; font-weight: 500; }
+.portal-links { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 10px; }
+.portal-link { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; color: var(--white); background: var(--blue); border-radius: 8px; padding: 7px 13px; text-decoration: none; transition: background .15s; border: 1px solid transparent; }
+.portal-link:hover { background: var(--blue2); }
+.portal-link.sec { background: var(--blue-soft); color: var(--blue); border-color: #bfdbfe; }
+.portal-link.sec:hover { background: #bfdbfe; }
+
+/* NO RESULTS */
+.no-results { text-align: center; padding: 3rem 1rem; color: var(--muted); }
+.no-results .nr-icon { font-size: 2.8rem; margin-bottom: 10px; }
+.no-results h3 { font-family: 'Sora', sans-serif; color: #334155; font-size: 1rem; margin-bottom: 6px; }
+.no-results p { font-size: 13px; line-height: 1.6; }
+.sec-title { font-size: 11px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 12px; }
+
+/* CHATBOT FAB */
+.chat-fab { position: fixed; bottom: 24px; right: 24px; width: 54px; height: 54px; background: linear-gradient(135deg, var(--blue), var(--teal)); border-radius: 50%; border: none; display: none; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; box-shadow: 0 6px 24px rgba(37,99,235,.4); transition: transform .2s, box-shadow .2s; z-index: 200; }
+.chat-fab:hover { transform: scale(1.08); box-shadow: 0 8px 30px rgba(37,99,235,.5); }
+.fab-notif { position: absolute; top: -2px; right: -2px; width: 16px; height: 16px; background: var(--red); border-radius: 50%; border: 2px solid #f1f5f9; display: none; align-items: center; justify-content: center; font-size: 9px; color: #fff; font-weight: 700; }
+
+/* CHAT WINDOW */
+.chat-window { position: fixed; bottom: 90px; right: 24px; width: 355px; height: 510px; background: var(--white); border-radius: 18px; box-shadow: var(--shadow-lg); display: none; flex-direction: column; border: 1px solid var(--border); overflow: hidden; z-index: 200; animation: popIn .2s cubic-bezier(.34,1.56,.64,1); }
+.chat-window.open { display: flex; }
+@keyframes popIn { from { opacity:0; transform:scale(.9) translateY(10px); } to { opacity:1; transform:scale(1) translateY(0); } }
+.chat-header { background: linear-gradient(110deg, #1e3a5f, #0f4c81); padding: 14px 16px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.chat-header-avatar { width: 34px; height: 34px; background: rgba(255,255,255,.15); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.chat-header-info { flex: 1; }
+.chat-header-name { font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; color: #fff; }
+.chat-header-status { font-size: 10px; color: #93c5fd; display: flex; align-items: center; gap: 4px; }
+.status-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; }
+.chat-close { background: rgba(255,255,255,.1); border: none; width: 26px; height: 26px; border-radius: 7px; color: #fff; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s; }
+.chat-close:hover { background: rgba(255,255,255,.22); }
+.chat-msgs { flex: 1; padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: var(--surface); }
+.msg { display: flex; gap: 7px; align-items: flex-start; }
+.msg.user { flex-direction: row-reverse; }
+.avatar { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+.av-bot { background: #1e3a5f; }
+.av-user { background: var(--blue); }
+.bubble { max-width: 82%; font-size: 12px; line-height: 1.55; padding: 8px 12px; }
+.bubble-bot { background: var(--white); border: 1px solid var(--border); border-radius: 12px 12px 12px 2px; color: #1e293b; }
+.bubble-user { background: var(--blue); color: #fff; border-radius: 12px 12px 2px 12px; }
+.chat-footer { padding: 10px 12px; border-top: 1px solid var(--border); flex-shrink: 0; background: var(--white); }
+.qq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 8px; }
+.qq-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; font-size: 10px; color: var(--slate); cursor: pointer; text-align: left; line-height: 1.4; font-family: 'DM Sans', sans-serif; transition: background .12s; }
+.qq-btn:hover { background: var(--blue-soft); border-color: #93c5fd; color: #1e40af; }
+.chat-input-row { display: flex; gap: 6px; }
+.chat-input-row input { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 9px; padding: 9px 12px; font-size: 12px; color: #1e293b; outline: none; font-family: 'DM Sans', sans-serif; transition: border-color .15s; }
+.chat-input-row input:focus { border-color: var(--blue); }
+.send-btn { background: var(--blue); color: #fff; border: none; border-radius: 9px; padding: 9px 14px; font-size: 12px; cursor: pointer; transition: background .15s; }
+.send-btn:hover { background: var(--blue2); }
+
+/* WISHLIST / APPLIED / RECENTS CARDS */
+.item-card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; display: flex; align-items: flex-start; gap: 14px; }
+.item-icon { font-size: 24px; flex-shrink: 0; }
+.item-info { flex: 1; min-width: 0; }
+.item-name { font-size: 13px; font-weight: 600; color: #1e293b; margin-bottom: 3px; }
+.item-desc { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.item-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.item-date { font-size: 11px; color: var(--muted); }
+.status-badge { font-size: 10px; font-weight: 600; padding: 3px 9px; border-radius: 20px; }
+.sb-applied { background: var(--green-bg); color: var(--green-dark); }
+.remove-btn { background: none; border: 1px solid var(--border); border-radius: 7px; padding: 5px 10px; font-size: 11px; color: var(--muted); cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .15s; white-space: nowrap; flex-shrink: 0; }
+.remove-btn:hover { border-color: var(--red); color: var(--red); }
+.recent-item { display: flex; align-items: center; gap: 10px; background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; margin-bottom: 8px; }
+.recent-icon { font-size: 20px; }
+.recent-info { flex: 1; }
+.recent-name { font-size: 13px; font-weight: 500; color: #1e293b; }
+.recent-time { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.recent-badge { font-size: 10px; background: var(--blue-soft); color: #1e40af; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
+
+/* Responsive layout */
+@media (max-width: 980px) {
+  .topnav { padding: 0 10px; gap: 8px; }
+  .nav-tab { padding: 6px 7px; font-size: 11px; }
+  .sidebar { width: 205px; min-width: 205px; }
+  .content { flex-direction: column; overflow-y: auto; }
+  .col-left, .col-right { overflow: visible; flex: none; width: 100%; border-right: 0; }
+  .col-right { border-top: 1px solid var(--border); }
+}
+@media (max-width: 640px) {
+  #app { height: 100dvh; }
+  .login-card { width: min(430px, calc(100vw - 28px)); padding: 28px 22px; }
+  .topnav { height: auto; min-height: 56px; flex-wrap: wrap; padding: 10px; }
+  .nav-spacer { display: none; }
+  .nav-tabs { order: 3; width: 100%; overflow-x: auto; }
+  .nav-tab { white-space: nowrap; }
+  .nav-user { margin-left: auto; }
+  .app-body { min-height: 0; }
+  .sidebar { width: 100%; min-width: 0; max-height: 42vh; }
+  .app-body { flex-direction: column; overflow-y: auto; }
+  .main { min-height: 0; overflow: visible; }
+  .panel { padding: 16px; }
+  .panel.active { min-height: 55vh; }
+  .hero { padding: 16px; }
+  .hero-title { font-size: 1rem; }
+  .content { overflow: visible; }
+  .col-left, .col-right { padding: 14px; }
+  .scheme-card { padding: 13px; }
+  .card-actions { position: static; justify-content: flex-end; margin-bottom: 9px; }
+  .sc-title { padding-right: 0; }
+  .chat-window { right: 10px; bottom: 78px; width: calc(100vw - 20px); height: min(70vh, 510px); }
+  .chat-fab { right: 14px; bottom: 14px; }
+  .item-card { flex-wrap: wrap; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-page">
+  <div class="login-card">
+    <div class="login-logo"><div class="logo-icon">🏛️</div>SchemeWise</div>
+    <div class="login-sub">Government Scheme Eligibility Portal · India</div>
+    <div style="font-size:11px;line-height:1.5;color:#fcd34d;margin-bottom:10px;">Demo login only: this version stores accounts in this browser. Do not use a real or reused password.</div>
+
+    <!-- Auth Tabs -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-signin" onclick="switchAuthTab('signin')">Sign In</button>
+      <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Register</button>
+    </div>
+
+    <!-- SIGN IN FORM -->
+    <div id="form-signin">
+      <label class="login-label">Email / Mobile</label>
+      <input class="login-input" id="l-email" type="text" placeholder="you@example.com or 9XXXXXXXXX" autocomplete="username"/>
+      <label class="login-label">Password</label>
+      <div class="pw-wrap">
+        <input class="login-input" id="l-pass" type="password" placeholder="••••••••" autocomplete="current-password" style="padding-right:42px;"/>
+        <button class="pw-toggle" type="button" onclick="togglePw('l-pass','eye-si')" id="eye-si">👁</button>
+      </div>
+      <div class="login-error" id="login-error">⚠️ Invalid credentials. Please check your email and password.</div>
+      <button class="login-btn" id="login-btn">Sign In →</button>
+
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div id="form-register" style="display:none;">
+      <label class="login-label">Full Name</label>
+      <input class="login-input" id="r-name" type="text" placeholder="e.g. Ramesh Kumar"/>
+      <label class="login-label">Email / Mobile</label>
+      <input class="login-input" id="r-email" type="text" placeholder="you@example.com or 9XXXXXXXXX"/>
+      <label class="login-label">Password</label>
+      <div class="pw-wrap">
+        <input class="login-input" id="r-pass" type="password" placeholder="Min 6 characters" style="padding-right:42px;"/>
+        <button class="pw-toggle" type="button" onclick="togglePw('r-pass','eye-rg')" id="eye-rg">👁</button>
+      </div>
+      <label class="login-label">Confirm Password</label>
+      <input class="login-input" id="r-pass2" type="password" placeholder="Re-enter password"/>
+      <div class="login-error" id="register-error">⚠️ Please check your details.</div>
+      <div class="login-success" id="register-success">✅ Account created! You can now sign in.</div>
+      <button class="login-btn" id="register-btn" onclick="doRegister()">Create Account →</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <!-- Top Nav -->
+  <div class="topnav">
+    <div class="nav-logo"><div class="nl-icon">🏛️</div>SchemeWise</div>
+    <div class="nav-spacer"></div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchPanel('checker',this)">📋 Checker</button>
+      <button class="nav-tab" onclick="switchPanel('recents',this)">🕓 Recents <span class="nav-badge" id="recents-badge">0</span></button>
+      <button class="nav-tab" onclick="switchPanel('wishlist',this)">❤️ Wishlist <span class="nav-badge" id="wishlist-badge">0</span></button>
+      <button class="nav-tab" onclick="switchPanel('applied',this)">✅ Applied <span class="nav-badge" id="applied-badge">0</span></button>
+    </div>
+    <div class="nav-user">
+      <div class="nav-avatar" id="nav-avatar">D</div>
+      <span id="nav-name">demo</span>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="app-body">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sb-section" style="padding-top:18px;">
+        <div class="sb-heading">Your Profile</div>
+        <label class="sb-label">Age</label>
+        <input class="sb-input" id="inp-age" type="number" min="1" max="120" placeholder="e.g. 32" />
+        <label class="sb-label">Annual Income</label>
+        <input type="range" class="sb-slider" id="inp-income" min="0" max="1000000" step="5000" value="0"/>
+        <div class="slider-val" id="income-val">₹0 / year</div>
+        <label class="sb-label">Category</label>
+        <select class="sb-input" id="inp-cat">
+          <option value="General">General</option>
+          <option value="SC">SC</option>
+          <option value="ST">ST</option>
+          <option value="OBC">OBC</option>
+          <option value="Women">Women</option>
+          <option value="Farmer">Farmer</option>
+        </select>
+        <label class="sb-label">Occupation</label>
+        <select class="sb-input" id="inp-occ">
+          <option value="any">Any</option>
+          <option value="farmer">Farmer</option>
+          <option value="student">Student</option>
+          <option value="unemployed">Unemployed</option>
+          <option value="self-employed">Self-Employed</option>
+          <option value="salaried">Salaried</option>
+        </select>
+      </div>
+      <button class="sb-btn" id="check-btn">🔍 Check Eligibility</button>
+      <hr class="sb-divider"/>
+      <div class="sb-filter">
+        <div class="sb-heading">Filter by Ministry</div>
+        <div id="ministry-filters"></div>
+      </div>
+      <div class="sb-footer">Data from official GOI portals.<br>Visit respective portal for final eligibility.</div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main">
+
+      <!-- CHECKER PANEL -->
+      <div id="panel-checker" class="panel active" style="padding:0;overflow:hidden;">
+        <div class="hero">
+          <div class="hero-title">Public Scheme Eligibility Checker</div>
+          <div class="hero-sub">Explore schemes that may match your profile. Confirm eligibility on the official portal.</div>
+        </div>
+        <div class="content">
+          <div class="col-left">
+            <div class="sec-title">📋 Eligible Schemes</div>
+            <div id="stats-bar" style="display:none;" class="stats">
+              <div class="stat"><span class="stat-n" id="stat-total">12</span><span class="stat-l">Total Schemes</span></div>
+              <div class="stat"><span class="stat-n" id="stat-eligible" style="color:#15803d;">0</span><span class="stat-l">You Qualify</span></div>
+              <div class="stat"><span class="stat-n" id="stat-income" style="color:#b45309;">₹1.5L</span><span class="stat-l">Your Income</span></div>
+            </div>
+            <div id="success-msg" style="display:none;" class="success-bar"></div>
+            <div id="results-area">
+              <div class="no-results">
+                <div class="nr-icon">👈</div>
+                <h3>Enter your details to begin</h3>
+                <p>Fill in your profile in the sidebar<br>and click <strong>Check Eligibility</strong>.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-right">
+            <div class="sec-title">💬 Quick Actions</div>
+            <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:9px;padding:8px 12px;font-size:11px;color:#1d4ed8;margin-bottom:14px;">
+              💬 Click the floating chat button (bottom-right) to talk to the Scheme Assistant anytime.
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:18px;">
+              <button class="qq-btn" style="border-radius:10px;padding:10px 12px;font-size:12px;" onclick="openChat('What schemes are available for farmers?')">🌾 What schemes exist for farmers?</button>
+              <button class="qq-btn" style="border-radius:10px;padding:10px 12px;font-size:12px;" onclick="openChat('How do I apply for Ayushman Bharat?')">🏥 How to apply for Ayushman Bharat?</button>
+              <button class="qq-btn" style="border-radius:10px;padding:10px 12px;font-size:12px;" onclick="openChat('What documents do I need to apply?')">📋 What documents are needed?</button>
+              <button class="qq-btn" style="border-radius:10px;padding:10px 12px;font-size:12px;" onclick="openChat('What schemes are available for women?')">👩 Schemes for women?</button>
+              <button class="qq-btn" style="border-radius:10px;padding:10px 12px;font-size:12px;" onclick="openChat('List all schemes')">📋 List all available schemes</button>
+            </div>
+            <div style="padding-top:14px;border-top:1px solid var(--border);">
+              <div class="sec-title">📊 My Activity</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                <div onclick="switchPanel('wishlist',document.querySelectorAll('.nav-tab')[2])" style="background:var(--amber-bg);border:1px solid #fcd34d;border-radius:10px;padding:12px;text-align:center;cursor:pointer;">
+                  <div style="font-family:'Sora',sans-serif;font-size:1.4rem;font-weight:700;color:var(--amber-dark);" id="mini-wishlist">0</div>
+                  <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;">❤️ Wishlist</div>
+                </div>
+                <div onclick="switchPanel('applied',document.querySelectorAll('.nav-tab')[3])" style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:12px;text-align:center;cursor:pointer;">
+                  <div style="font-family:'Sora',sans-serif;font-size:1.4rem;font-weight:700;color:#15803d;" id="mini-applied">0</div>
+                  <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;">✅ Applied</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECENTS PANEL -->
+      <div id="panel-recents" class="panel">
+        <div class="panel-title">🕓 Recently Viewed</div>
+        <div class="panel-sub">Schemes you've expanded and viewed recently</div>
+        <div id="recents-list"></div>
+      </div>
+
+      <!-- WISHLIST PANEL -->
+      <div id="panel-wishlist" class="panel">
+        <div class="panel-title">❤️ My Wishlist</div>
+        <div class="panel-sub">Schemes you've saved for later</div>
+        <div id="wishlist-list"></div>
+      </div>
+
+      <!-- APPLIED PANEL -->
+      <div id="panel-applied" class="panel">
+        <div class="panel-title">✅ My Applications</div>
+        <div class="panel-sub">Track all the schemes you've applied for</div>
+        <div id="applied-list"></div>
+      </div>
+
+    </div><!-- /main -->
+  </div><!-- /app-body -->
+</div><!-- /app -->
+
+<!-- CHATBOT FAB -->
+<button class="chat-fab" id="chat-fab" onclick="toggleChat()" title="Open Scheme Assistant">
+  💬
+  <div class="fab-notif" id="fab-notif">1</div>
+</button>
+
+<!-- CHAT WINDOW -->
+<div class="chat-window" id="chat-window">
+  <div class="chat-header">
+    <div class="chat-header-avatar">🤖</div>
+    <div class="chat-header-info">
+      <div class="chat-header-name">Scheme Assistant</div>
+      <div class="chat-header-status"><div class="status-dot"></div> Online</div>
+    </div>
+    <button class="chat-close" onclick="toggleChat()">✕</button>
+  </div>
+  <div class="chat-msgs" id="chat-msgs"></div>
+  <div class="chat-footer">
+    <div class="qq-grid">
+      <button class="qq-btn" data-q="What schemes are for farmers?">🌾 Farmer schemes</button>
+      <button class="qq-btn" data-q="How do I apply for Ayushman Bharat?">🏥 Ayushman apply</button>
+      <button class="qq-btn" data-q="What documents do I need?">📋 Documents needed</button>
+      <button class="qq-btn" data-q="List all schemes">📋 All schemes</button>
+    </div>
+    <div class="chat-input-row">
+      <input type="text" id="chat-input" placeholder="Ask about schemes…" />
+      <button class="send-btn" id="send-btn">➤</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── SCHEME DATA ───
+const SCHEMES = [
+  { name:"PM Kisan Samman Nidhi", ministry:"Ministry of Agriculture", category:"Farmer", minAge:18, maxAge:65, maxIncome:200000, benefit:"₹6,000/year direct transfer", link:"https://pmkisan.gov.in", applyLink:"https://pmkisan.gov.in/RegistrationForm.aspx", occupation:"farmer", desc:"Direct income support of ₹6,000/year in three instalments to small and marginal farmer families.", icon:"🌾" },
+  { name:"PM Ujjwala Yojana", ministry:"Ministry of Petroleum", category:"Women", minAge:18, maxAge:60, maxIncome:100000, benefit:"Free LPG connection + first refill", link:"https://pmuy.gov.in", applyLink:"https://pmuy.gov.in", occupation:"any", desc:"Free LPG connection to women from BPL households to reduce dependence on traditional cooking fuels.", icon:"🔥" },
+  { name:"Pradhan Mantri Awas Yojana", ministry:"Ministry of Rural Development", category:"General", minAge:18, maxAge:70, maxIncome:120000, benefit:"₹1.2–1.3 lakh housing subsidy", link:"https://pmayg.nic.in", applyLink:"https://pmayg.nic.in/netiay/home.aspx", occupation:"any", desc:"Financial assistance for construction of pucca houses to BPL families in rural areas.", icon:"🏠" },
+  { name:"National Scholarship Portal (NSP)", ministry:"Ministry of Education", category:"SC/ST/OBC", minAge:15, maxAge:30, maxIncome:250000, benefit:"₹10,000–₹20,000/year scholarship", link:"https://scholarships.gov.in", applyLink:"https://scholarships.gov.in/fresh/newstdRegfrmInstruction", occupation:"student", desc:"Merit-cum-means scholarships for students belonging to SC/ST/OBC and minority communities.", icon:"📚" },
+  { name:"Ayushman Bharat – PMJAY", ministry:"Ministry of Health", category:"General", minAge:0, maxAge:100, maxIncome:150000, benefit:"₹5 lakh/year health insurance", link:"https://pmjay.gov.in", applyLink:"https://beneficiary.nha.gov.in", occupation:"any", desc:"Health cover of ₹5 lakh per year to economically vulnerable families for hospitalisation.", icon:"🏥" },
+  { name:"PM Mudra Yojana", ministry:"Ministry of Finance", category:"General", minAge:18, maxAge:65, maxIncome:500000, benefit:"Collateral-free loan up to ₹10 lakh", link:"https://mudra.org.in", applyLink:"https://udyamimitra.in", occupation:"any", desc:"Loans up to ₹10 lakh for non-corporate small business owners and entrepreneurs.", icon:"💼" },
+  { name:"Startup India Seed Fund", ministry:"DPIIT", category:"General", minAge:21, maxAge:45, maxIncome:2000000, benefit:"Up to ₹20 lakh seed funding", link:"https://seedfund.startupindia.gov.in", applyLink:"https://seedfund.startupindia.gov.in", occupation:"any", desc:"Seed funding for early-stage startups to support proof of concept and product development.", icon:"🚀" },
+  { name:"Mahatma Gandhi NREGA", ministry:"Ministry of Rural Development", category:"General", minAge:18, maxAge:60, maxIncome:80000, benefit:"100 days/year guaranteed employment", link:"https://nrega.nic.in", applyLink:"https://nrega.nic.in/netnrega/home.aspx", occupation:"unemployed", desc:"Guarantees 100 days of wage employment per year to rural households.", icon:"⛏️" },
+  { name:"Beti Bachao Beti Padhao", ministry:"Ministry of Women & Child Development", category:"Women", minAge:0, maxAge:18, maxIncome:300000, benefit:"Educational grants & awareness support", link:"https://wcd.nic.in", applyLink:"https://wcd.nic.in/schemes/beti-bachao-beti-padhao-scheme", occupation:"student", desc:"Programme to address declining child sex ratio and promote welfare of the girl child.", icon:"👧" },
+  { name:"PM Vishwakarma Yojana", ministry:"Ministry of MSME", category:"General", minAge:18, maxAge:60, maxIncome:300000, benefit:"₹3 lakh credit + training", link:"https://pmvishwakarma.gov.in", applyLink:"https://pmvishwakarma.gov.in/Home/RegistrationGuidelines", occupation:"any", desc:"Support scheme for artisans and craftspeople with skill training, credit, and market linkage.", icon:"🔨" },
+  { name:"Sukanya Samriddhi Yojana", ministry:"Ministry of Finance", category:"Women", minAge:0, maxAge:10, maxIncome:500000, benefit:"High-yield savings + tax exemption", link:"https://www.indiapost.gov.in", applyLink:"https://www.indiapost.gov.in", occupation:"any", desc:"Small savings scheme for the girl child offering attractive interest rates and tax benefits.", icon:"💰" },
+  { name:"PMEGP (Khadi & Village Industries)", ministry:"Ministry of MSME", category:"General", minAge:18, maxAge:55, maxIncome:400000, benefit:"15–35% margin money subsidy", link:"https://www.kviconline.gov.in", applyLink:"https://www.kviconline.gov.in/pmegpeportal/pmegphome/index.jsp", occupation:"any", desc:"Credit-linked subsidy scheme for micro enterprise establishment in non-farm sectors.", icon:"🏭" },
+];
+
+// ─── STATE ───
+let currentUser = null; // { email, name }
+let wishlist = [];
+let applied  = [];
+let recents  = [];
+let lastResults = [];
+let ministryFilter = [];
+
+function userKey(key) {
+  return currentUser ? 'sw_' + currentUser.email + '_' + key : 'sw_' + key;
+}
+
+function loadUserState() {
+  wishlist = JSON.parse(localStorage.getItem(userKey('wishlist')) || '[]');
+  applied  = JSON.parse(localStorage.getItem(userKey('applied'))  || '[]');
+  recents  = JSON.parse(localStorage.getItem(userKey('recents'))  || '[]');
+}
+
+function saveState() {
+  localStorage.setItem(userKey('wishlist'), JSON.stringify(wishlist));
+  localStorage.setItem(userKey('applied'),  JSON.stringify(applied));
+  localStorage.setItem(userKey('recents'),  JSON.stringify(recents));
+  updateBadges();
+}
+
+function updateBadges() {
+  const set = (id, n) => { const el=document.getElementById(id); el.textContent=n; el.classList.toggle('show',n>0); };
+  set('wishlist-badge', wishlist.length);
+  set('applied-badge',  applied.length);
+  set('recents-badge',  recents.length);
+  document.getElementById('mini-wishlist').textContent = wishlist.length;
+  document.getElementById('mini-applied').textContent  = applied.length;
+}
+
+// ─── AUTH ───
+const USERS_KEY = 'sw_users';
+function getUsers() {
+  try { return JSON.parse(localStorage.getItem(USERS_KEY) || 'null') || {}; } catch(e) { return {}; }
+}
+function saveUsers(u) { localStorage.setItem(USERS_KEY, JSON.stringify(u)); }
+
+function switchAuthTab(tab) {
+  document.getElementById('form-signin').style.display   = tab === 'signin'   ? '' : 'none';
+  document.getElementById('form-register').style.display = tab === 'register' ? '' : 'none';
+  document.getElementById('tab-signin').classList.toggle('active',   tab === 'signin');
+  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+  document.getElementById('login-error').style.display    = 'none';
+  document.getElementById('register-error').style.display = 'none';
+  document.getElementById('register-success').style.display = 'none';
+}
+
+function togglePw(inputId, btnId) {
+  const inp = document.getElementById(inputId);
+  const btn = document.getElementById(btnId);
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+  else { inp.type = 'password'; btn.textContent = '👁'; }
+}
+
+document.getElementById('login-btn').onclick = doLogin;
+document.getElementById('l-pass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+document.getElementById('l-email').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+function doLogin() {
+  const u   = document.getElementById('l-email').value.trim();
+  const p   = document.getElementById('l-pass').value;
+  const err = document.getElementById('login-error');
+  const users = getUsers();
+  if (!u || !p) { err.textContent = '⚠️ Please enter your email/mobile and password.'; err.style.display='block'; return; }
+  if (!users[u] || users[u].password !== p) { err.textContent = '⚠️ Invalid credentials. Please check your credentials or register a new account.'; err.style.display='block'; return; }
+  err.style.display='none';
+  const displayName = users[u].name || u.split('@')[0];
+  currentUser = { email: u, name: displayName };
+  loadUserState();
+  document.getElementById('nav-name').textContent = displayName;
+  document.getElementById('nav-avatar').textContent = displayName[0].toUpperCase();
+  document.getElementById('login-page').style.display = 'none';
+  document.getElementById('app').classList.add('visible');
+  document.getElementById('chat-fab').style.display = 'flex';
+  updateBadges();
+  setTimeout(() => {
+    appendMsg('bot', '👋 Namaste ' + displayName + '! I\'m your Scheme Assistant.\nAsk me about government schemes, eligibility, how to apply, or documents needed!');
+    document.getElementById('fab-notif').style.display = 'flex';
+  }, 700);
+}
+
+function doRegister() {
+  const name  = document.getElementById('r-name').value.trim();
+  const email = document.getElementById('r-email').value.trim();
+  const pass  = document.getElementById('r-pass').value;
+  const pass2 = document.getElementById('r-pass2').value;
+  const err   = document.getElementById('register-error');
+  const suc   = document.getElementById('register-success');
+  err.style.display = 'none'; suc.style.display = 'none';
+  if (!name)  { err.textContent = '⚠️ Please enter your full name.'; err.style.display='block'; return; }
+  if (!email || (!email.includes('@') && !/^[6-9]\d{9}$/.test(email))) { err.textContent = '⚠️ Enter a valid email or 10-digit mobile number.'; err.style.display='block'; return; }
+  if (pass.length < 6) { err.textContent = '⚠️ Password must be at least 6 characters.'; err.style.display='block'; return; }
+  if (pass !== pass2) { err.textContent = '⚠️ Passwords do not match.'; err.style.display='block'; return; }
+  const users = getUsers();
+  if (users[email]) { err.textContent = '⚠️ An account with this email/mobile already exists.'; err.style.display='block'; return; }
+  users[email] = { password: pass, name: name };
+  saveUsers(users);
+  suc.style.display = 'block';
+  document.getElementById('r-name').value = '';
+  document.getElementById('r-email').value = '';
+  document.getElementById('r-pass').value = '';
+  document.getElementById('r-pass2').value = '';
+  setTimeout(() => switchAuthTab('signin'), 1600);
+}
+
+function logout() {
+  currentUser = null;
+  wishlist = []; applied = []; recents = [];
+  document.getElementById('login-page').style.display = 'flex';
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('chat-fab').style.display = 'none';
+  document.getElementById('chat-window').classList.remove('open');
+  document.getElementById('chat-msgs').innerHTML = '';
+  document.getElementById('l-email').value = '';
+  document.getElementById('l-pass').value = '';
+  document.getElementById('login-error').style.display = 'none';
+  switchAuthTab('signin');
+}
+
+// ─── PANELS ───
+function switchPanel(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  const sidebar = document.getElementById('sidebar');
+  sidebar.style.display = id === 'checker' ? 'flex' : 'none';
+  if (id === 'wishlist') renderWishlist();
+  if (id === 'applied')  renderApplied();
+  if (id === 'recents')  renderRecents();
+}
+
+// ─── ELIGIBILITY ───
+function checkEligibility(age, income, category, occupation) {
+  return SCHEMES.filter(s => {
+    if (age < s.minAge || age > s.maxAge) return false;
+    if (income > s.maxIncome) return false;
+    if (s.occupation !== 'any' && s.occupation !== occupation) return false;
+    const c = category.toLowerCase(), sc = s.category.toLowerCase();
+    if (sc === 'general') return true;
+    if (sc === c) return true;
+    if (sc === 'sc/st/obc' && ['sc','st','obc'].includes(c)) return true;
+    if (sc === 'farmer' && occupation === 'farmer') return true;
+    if (sc === 'women' && c === 'women') return true;
+    return false;
+  });
+}
+
+// ─── RENDER CARD ───
+function renderCard(s, idx) {
+  const isW = wishlist.includes(s.name);
+  const isA = applied.some(a => a.name === s.name);
+  return `
+  <div class="scheme-card">
+    <div class="card-actions">
+      <button class="wishlist-btn ${isW?'saved':''}" onclick="toggleWishlist(${idx})" id="wb-${idx}" title="${isW?'Remove from wishlist':'Save to wishlist'}">${isW?'⭐':'☆'}</button>
+      <button class="apply-action-btn ${isA?'applied':''}" onclick="toggleApplied(${idx})" id="ab-${idx}">${isA?'✅ Applied':'+ Mark Applied'}</button>
+    </div>
+    <div class="sc-title">${s.icon} ${s.name}</div>
+    <div class="sc-desc">${s.desc}</div>
+    <div class="badges">
+      <span class="badge b-cat">${s.category}</span>
+      <span class="badge b-min">${s.ministry}</span>
+      <span class="badge b-ben">💰 ${s.benefit}</span>
+    </div>
+    <div class="criteria">
+      <span class="crit">👤 Age ${s.minAge}–${s.maxAge} yrs</span>
+      <span class="crit">💵 ≤ ₹${s.maxIncome.toLocaleString('en-IN')}/yr</span>
+      <span class="crit">🏷 ${s.occupation==='any'?'All':s.occupation}</span>
+    </div>
+    <button class="expand-btn" onclick="toggleDetail(${idx})">📎 View details &amp; apply →</button>
+    <div class="detail-panel" id="detail-${idx}">
+      <div class="detail-grid">
+        <div class="detail-item"><div class="dk">Ministry</div><div class="dv">${s.ministry}</div></div>
+        <div class="detail-item"><div class="dk">Category</div><div class="dv">${s.category}</div></div>
+        <div class="detail-item"><div class="dk">Age Range</div><div class="dv">${s.minAge}–${s.maxAge} years</div></div>
+        <div class="detail-item"><div class="dk">Max Income</div><div class="dv">₹${s.maxIncome.toLocaleString('en-IN')}/yr</div></div>
+      </div>
+      <div class="detail-item" style="margin-bottom:12px;"><div class="dk">Key Benefit</div><div class="dv">${s.benefit}</div></div>
+      <div class="portal-links">
+  <a class="portal-link"
+     href="${s.link}"
+     target="_blank"
+     rel="noopener"
+     onclick="event.stopPropagation()">
+     🌐 Official Portal
+  </a>
+
+  <a class="portal-link sec"
+     href="${s.applyLink||s.link}"
+     target="_blank"
+     rel="noopener"
+     onclick="event.stopPropagation()">
+     📝 Apply Now
+  </a>
+</div>
+    </div>
+  </div>`;
+}
+
+function toggleDetail(idx) {
+  const panel = document.getElementById('detail-' + idx);
+  panel.classList.toggle('open');
+  const btn = panel.previousElementSibling;
+  btn.innerHTML = panel.classList.contains('open') ? '▲ Hide details' : '📎 View details & apply →';
+  if (panel.classList.contains('open') && lastResults[idx]) {
+    const s = lastResults[idx];
+    recents = recents.filter(r => r.name !== s.name);
+    recents.unshift({ name:s.name, ministry:s.ministry, benefit:s.benefit, icon:s.icon, time:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) });
+    if (recents.length > 15) recents.pop();
+    saveState();
+  }
+}
+
+// ─── WISHLIST ───
+function toggleWishlist(idx) {
+  const s = lastResults[idx]; if (!s) return;
+  const btn = document.getElementById('wb-' + idx);
+  if (wishlist.includes(s.name)) { wishlist = wishlist.filter(n => n !== s.name); btn.textContent='☆'; btn.classList.remove('saved'); }
+  else { wishlist.push(s.name); btn.textContent='⭐'; btn.classList.add('saved'); }
+  saveState();
+}
+
+function renderWishlist() {
+  const el = document.getElementById('wishlist-list');
+  if (!wishlist.length) { el.innerHTML = `<div class="empty-state"><div class="empty-icon">❤️</div><div class="empty-title">No saved schemes</div><div class="empty-desc">Click the ⭐ icon on any scheme card to save it here.</div></div>`; return; }
+  el.innerHTML = wishlist.map(name => {
+    const s = SCHEMES.find(x => x.name === name); if (!s) return '';
+    return `<div class="item-card">
+      <div class="item-icon">${s.icon}</div>
+      <div class="item-info">
+        <div class="item-name">${s.name}</div>
+        <div class="item-desc">${s.benefit}</div>
+        <div class="item-meta">
+          <span class="item-date">${s.ministry}</span>
+          <a class="portal-link" href="${s.link}" target="_blank" style="font-size:10px;padding:4px 10px;">🌐 Portal</a>
+          <a class="portal-link sec" href="${s.applyLink||s.link}" target="_blank" style="font-size:10px;padding:4px 10px;">📝 Apply</a>
+        </div>
+      </div>
+      <button class="remove-btn" onclick="removeWishlist('${s.name}')">✕ Remove</button>
+    </div>`;
+  }).join('');
+}
+
+function removeWishlist(name) { wishlist = wishlist.filter(n => n !== name); saveState(); renderWishlist(); }
+
+// ─── APPLIED ───
+function toggleApplied(idx) {
+  const s = lastResults[idx]; if (!s) return;
+  const btn = document.getElementById('ab-' + idx);
+  if (applied.some(a => a.name === s.name)) {
+    applied = applied.filter(a => a.name !== s.name);
+    btn.textContent='+ Mark Applied'; btn.classList.remove('applied');
+  } else {
+    applied.push({ name:s.name, benefit:s.benefit, ministry:s.ministry, icon:s.icon, link:s.applyLink||s.link, date:new Date().toLocaleDateString('en-IN'), status:'Applied' });
+    btn.textContent='✅ Applied'; btn.classList.add('applied');
+  }
+  saveState();
+}
+
+function renderApplied() {
+  const el = document.getElementById('applied-list');
+  if (!applied.length) { el.innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-title">No applications yet</div><div class="empty-desc">Click "Mark Applied" on any scheme card to track it here.</div></div>`; return; }
+  el.innerHTML = applied.map((a, i) => `
+    <div class="item-card">
+      <div class="item-icon">${a.icon}</div>
+      <div class="item-info">
+        <div class="item-name">${a.name}</div>
+        <div class="item-desc">${a.benefit}</div>
+        <div class="item-meta">
+          <span class="item-date">Applied: ${a.date}</span>
+          <span class="status-badge sb-applied">✓ ${a.status}</span>
+          <a class="portal-link" href="${a.link}" target="_blank" style="font-size:10px;padding:4px 10px;">📝 Track Application</a>
+        </div>
+      </div>
+      <button class="remove-btn" onclick="removeApplied(${i})">✕ Remove</button>
+    </div>
+  `).join('');
+}
+
+function removeApplied(i) { applied.splice(i,1); saveState(); renderApplied(); }
+
+// ─── RECENTS ───
+function renderRecents() {
+  const el = document.getElementById('recents-list');
+  if (!recents.length) { el.innerHTML = `<div class="empty-state"><div class="empty-icon">🕓</div><div class="empty-title">No recent activity</div><div class="empty-desc">Schemes you expand in the checker will appear here.</div></div>`; return; }
+  el.innerHTML = recents.map(r => `
+    <div class="recent-item">
+      <div class="recent-icon">${r.icon}</div>
+      <div class="recent-info"><div class="recent-name">${r.name}</div><div class="recent-time">${r.ministry} · Viewed at ${r.time}</div></div>
+      <span class="recent-badge">${r.benefit.split(' ').slice(0,3).join(' ')}</span>
+    </div>
+  `).join('');
+}
+
+// ─── CHECK BUTTON: connect to Flask /check ───
+document.getElementById('check-btn').addEventListener('click', async () => {
+  const ageText = document.getElementById('inp-age').value.trim();
+  const income = Number(document.getElementById('inp-income').value);
+  const category = document.getElementById('inp-cat').value;
+  const occupation = document.getElementById('inp-occ').value;
+  const area = document.getElementById('results-area');
+
+  if (!ageText) { alert('Please enter your age.'); return; }
+  const age = Number(ageText);
+  if (!Number.isInteger(age) || age < 1 || age > 120) {
+    alert('Please enter a valid age (1–120).'); return;
+  }
+  if (!Number.isFinite(income) || income < 0) {
+    alert('Please select a valid annual income.'); return;
+  }
+
+  const btn = document.getElementById('check-btn');
+  btn.disabled = true;
+  btn.textContent = 'Checking…';
+  area.innerHTML = '<div class="no-results"><h3>Checking eligibility…</h3><p>Contacting the SchemeWise service.</p></div>';
+  document.getElementById('success-msg').style.display = 'none';
+
+  try {
+    const response = await fetch('http://127.0.0.1:5000/check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ age, income, category, occupation })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Eligibility request failed.');
+    if (!Array.isArray(data)) throw new Error('Unexpected response from the eligibility service.');
+
+    // Convert backend scheme fields to the fields used by the existing cards.
+    lastResults = data.map(item => {
+      const known = SCHEMES.find(s =>
+        s.name.toLowerCase().includes(String(item.name || '').toLowerCase()) ||
+        String(item.name || '').toLowerCase().includes(s.name.toLowerCase())
+      );
+      const fallbackLinks = {
+        'PM Kisan': 'https://pmkisan.gov.in',
+        'Ujjwala Yojana': 'https://pmuy.gov.in',
+        'Ayushman Bharat': 'https://beneficiary.nha.gov.in'
+      };
+      const link = (known && known.link) || fallbackLinks[item.name] || 'https://www.india.gov.in/';
+      return {
+        name: item.name || 'Government Scheme',
+        desc: item.desc || item.benefit || 'See the official portal for scheme details.',
+        category: item.category || 'General',
+        ministry: (known && known.ministry) || 'Government of India',
+        benefit: item.desc || item.benefit || 'See official scheme details',
+        minAge: Number(item.ageMin ?? (known ? known.minAge : 0)),
+        maxAge: Number(item.ageMax ?? (known ? known.maxAge : 120)),
+        maxIncome: Number(item.income ?? (known ? known.maxIncome : 0)),
+        occupation: item.occupation || (known ? known.occupation : 'any'),
+        link,
+        applyLink: (known && known.applyLink) || link,
+        icon: (known && known.icon) || '🏛️'
+      };
+    });
+
+    document.getElementById('stat-total').textContent = data.length;
+    document.getElementById('stat-eligible').textContent = lastResults.length;
+    document.getElementById('stat-income').textContent = '₹' + income.toLocaleString('en-IN');
+    document.getElementById('stats-bar').style.display = 'grid';
+    document.getElementById('success-msg').style.display = 'block';
+    document.getElementById('success-msg').textContent = `Found ${lastResults.length} scheme(s) matching the basic criteria. Verify final eligibility on each official portal.`;
+    buildMinistryFilters(lastResults);
+    renderFiltered();
+  } catch (error) {
+    console.error('Eligibility check failed:', error);
+    area.innerHTML = `<div class="no-results"><div class="nr-icon">⚠️</div><h3>Could not check eligibility</h3><p>${escapeHtml(error.message)}<br>Make sure Flask is running at http://127.0.0.1:5000.</p></div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔍 Check Eligibility';
+  }
+});
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
+document.getElementById('inp-income').addEventListener('input', function() {
+  document.getElementById('income-val').textContent = '₹' + Number(this.value).toLocaleString('en-IN') + ' / year';
+});
+
+function buildMinistryFilters(results) {
+  const ministries = [...new Set(results.map(s => s.ministry))].sort();
+  ministryFilter = [...ministries];
+  document.getElementById('ministry-filters').innerHTML = ministries.map(m => `
+    <label class="sb-chip"><input type="checkbox" checked value="${m}" onchange="filterChanged()"/> ${m}</label>`).join('');
+}
+
+function filterChanged() {
+  ministryFilter = [...document.querySelectorAll('#ministry-filters input:checked')].map(i => i.value);
+  renderFiltered();
+}
+
+function renderFiltered() {
+  const filtered = lastResults.filter(s => ministryFilter.includes(s.ministry));
+  const area = document.getElementById('results-area');
+  document.getElementById('stat-eligible').textContent = filtered.length;
+  if (!filtered.length) {
+    document.getElementById('success-msg').innerHTML = 'No schemes match the current filters. This is only a preliminary check; verify requirements on official portals.';
+    area.innerHTML = `<div class="no-results"><div class="nr-icon">🔍</div><h3>No matching schemes</h3><p>Try adjusting your filters or profile.</p></div>`;
+  } else {
+    document.getElementById('success-msg').innerHTML = `✅ Found <strong>${filtered.length} scheme(s)</strong> you may be eligible for!`;
+    area.innerHTML = filtered.map((s,i) => renderCard(s,i)).join('');
+  }
+}
+
+// ─── CHATBOT ───
+const chatRules = [
+  { keys:['hi','hello','hey','namaste'], ans:"👋 Namaste! I'm your Scheme Assistant. I can help you:\n• Find schemes you're eligible for\n• Understand how to apply\n• Know what documents you need\n• Learn about benefits\n\nWhat would you like to know?" },
+  { keys:['thank','thanks','dhanyawad'], ans:"You're welcome! 😊 Feel free to ask anything else about government schemes." },
+  { keys:['farmer','farm','kisan','agricultur','crop','farming'], ans:"🌾 Schemes for farmers:\n\n• **PM Kisan Samman Nidhi** – ₹6,000/year direct bank transfer\n  → pmkisan.gov.in\n• **PM Vishwakarma Yojana** – ₹3 lakh credit + skill training\n  → pmvishwakarma.gov.in\n• **PMEGP** – 15–35% margin money subsidy\n  → kviconline.gov.in\n\nRegister with your Aadhaar and land records." },
+  { keys:['women','mahila','girl','female','beti'], ans:"👩 Schemes for women & girls:\n\n• **PM Ujjwala Yojana** – Free LPG for BPL women → pmuy.gov.in\n• **Sukanya Samriddhi Yojana** – High-yield savings for girl child → indiapost.gov.in\n• **Beti Bachao Beti Padhao** – Educational grants → wcd.nic.in" },
+  { keys:['student','scholarship','study','college','school','education'], ans:"📚 Schemes for students:\n\n• **National Scholarship Portal** – ₹10,000–₹20,000/year for SC/ST/OBC\n  → scholarships.gov.in\n• **Beti Bachao Beti Padhao** – Support for girl child education\n  → wcd.nic.in\n\nKeep your income certificate, marksheet, and Aadhaar ready." },
+  { keys:['health','hospital','medical','ayushman','pmjay','insurance','treatment'], ans:"🏥 **Ayushman Bharat – PMJAY**:\n\n• Covers up to ₹5 lakh/year per family\n• Includes hospitalisation, surgery & medicines\n• Free at all empanelled hospitals\n• No premium required\n\n→ Check eligibility: pmjay.gov.in\n→ Apply: beneficiary.nha.gov.in" },
+  { keys:['document','papers','required','certificate','proof'], ans:"📋 Common documents required:\n\n• Aadhaar Card (mandatory for all)\n• Income Certificate (from tehsil/block office)\n• Bank Passbook (for direct transfers)\n• Caste Certificate (for SC/ST/OBC schemes)\n• Land Records (for farmer schemes)\n• Residence Proof (ration card or voter ID)\n• Passport-size photograph" },
+  { keys:['apply','application','how to apply','register','enroll'], ans:"📝 How to apply for government schemes:\n\n1. Visit the official scheme portal (links on scheme cards)\n2. Register with your Aadhaar + mobile number\n3. Fill the online/offline application form\n4. Upload required documents (self-attested)\n5. Submit and save your application reference number\n6. Track status on the same portal" },
+  { keys:['income','limit','salary','earning','how much'], ans:"💰 Income limits by scheme:\n\n• PM Kisan: ₹2 lakh/year\n• Ayushman Bharat: ₹1.5 lakh/year\n• PMAY Housing: ₹1.2 lakh/year\n• NREGA: ₹80,000/year\n• PM Ujjwala: ₹1 lakh/year\n\nUse the Eligibility Checker to find your qualifying schemes!" },
+  { keys:['mudra','loan','business','entrepreneur','startup'], ans:"💼 **PM Mudra Yojana** – Collateral-free loans:\n\n• Shishu: up to ₹50,000\n• Kishore: ₹50,000–₹5 lakh\n• Tarun: ₹5 lakh–₹10 lakh\n\n→ Apply: udyamimitra.in\n\n**Startup India Seed Fund** – up to ₹20 lakh\n→ Apply: seedfund.startupindia.gov.in" },
+  { keys:['housing','house','home','awas','shelter','pmay'], ans:"🏠 **PMAY-G**:\n\n• ₹1.2–1.3 lakh for pucca house construction\n• For BPL families in rural areas\n• Age: 18–70 years\n\n→ Apply: pmayg.nic.in" },
+  { keys:['what schemes','list of schemes','all schemes','list all'], ans:"📋 All 12 schemes:\n\n1. 🌾 PM Kisan Samman Nidhi\n2. 🔥 PM Ujjwala Yojana\n3. 🏠 PMAY-G Housing Scheme\n4. 📚 National Scholarship Portal\n5. 🏥 Ayushman Bharat – PMJAY\n6. 💼 PM Mudra Yojana\n7. 🚀 Startup India Seed Fund\n8. ⛏️ Mahatma Gandhi NREGA\n9. 👧 Beti Bachao Beti Padhao\n10. 🔨 PM Vishwakarma Yojana\n11. 💰 Sukanya Samriddhi Yojana\n12. 🏭 PMEGP Khadi Scheme\n\nUse the Eligibility Checker to see which ones you qualify for!" },
+];
+
+function hasKeyword(lower, keys) { return keys.some(k => lower.includes(k)); }
+
+function getBotReply(msg) {
+  const lower = msg.toLowerCase().trim();
+  for (const r of chatRules) { if (hasKeyword(lower, r.keys)) return r.ans; }
+  for (const s of SCHEMES) {
+    const words = s.name.toLowerCase().split(' ').filter(w => w.length > 3);
+    if (words.filter(w => lower.includes(w)).length >= 2)
+      return `**${s.name}** ${s.icon}\n\n📌 ${s.desc}\n\n• Ministry: ${s.ministry}\n• Benefit: ${s.benefit}\n• Age: ${s.minAge}–${s.maxAge} years\n• Income limit: ₹${s.maxIncome.toLocaleString('en-IN')}/year\n\n🌐 Official Portal: ${s.link}\n📝 Apply: ${s.applyLink||s.link}`;
+  }
+  return "I can help you with:\n• Schemes you're eligible for → use the form\n• How to apply for specific schemes\n• Documents required\n• Benefits and income limits\n\nTry: 'Schemes for farmers' or 'How to apply for Ayushman Bharat?'";
+}
+
+function appendMsg(role, text) {
+  const msgs = document.getElementById('chat-msgs');
+  const div = document.createElement('div');
+  div.className = 'msg' + (role === 'user' ? ' user' : '');
+
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar ' + (role === 'user' ? 'av-user' : 'av-bot');
+  avatar.textContent = role === 'user' ? '🧑' : '🤖';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble ' + (role === 'user' ? 'bubble-user' : 'bubble-bot');
+  // Treat all content as text, then safely add line breaks.
+  String(text ?? '').split('\n').forEach((line, index) => {
+    if (index) bubble.appendChild(document.createElement('br'));
+    bubble.appendChild(document.createTextNode(line));
+  });
+  div.append(avatar, bubble);
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+async function sendMessage(text) {
+  if (!text.trim()) return;
+
+  appendMsg("user", text);
+  document.getElementById("chat-input").value = "";
+
+  try {
+    const response = await fetch(
+      "http://127.0.0.1:5000/chat",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ message: text })
+      }
+    );
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(data.reply || data.error || 'Chat request failed.');
+    }
+    if (typeof data.reply !== 'string' || !data.reply.trim()) {
+      throw new Error('The chatbot returned an empty response.');
+    }
+    appendMsg('bot', data.reply);
+  } catch (error) {
+    appendMsg(
+      "bot",
+      "I couldn't connect to the chatbot service. Please try again."
+    );
+    console.error(error);
+  }
+}
+
+function openChat(msg) {
+  document.getElementById('chat-window').classList.add('open');
+  document.getElementById('fab-notif').style.display = 'none';
+  if (msg) setTimeout(() => sendMessage(msg), 300);
+}
+
+function toggleChat() {
+  document.getElementById('chat-window').classList.toggle('open');
+  document.getElementById('fab-notif').style.display = 'none';
+}
+
+document.getElementById('send-btn').addEventListener('click', () => sendMessage(document.getElementById('chat-input').value));
+document.getElementById('chat-input').addEventListener('keydown', e => { if(e.key==='Enter') sendMessage(e.target.value); });
+document.querySelectorAll('.qq-btn').forEach(btn => btn.addEventListener('click', () => sendMessage(btn.dataset.q)));
+
+// ─── INIT ───
+document.getElementById('sidebar').style.display = 'flex';
+updateBadges();
+</script>
+</body>
+</html>
