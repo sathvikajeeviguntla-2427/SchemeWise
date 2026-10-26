@@ -276,7 +276,7 @@ def chat():
             confidence = float(max(probabilities))
 
         # Handle uncertain predictions.
-        if confidence is not None and confidence < 0.40:
+        if confidence is not None and confidence < 0.20:
             reply = (
                 "I'm not sure I understood. Try asking about farmer "
                 "schemes, health coverage, documents, or how to apply."
