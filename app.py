@@ -3,8 +3,21 @@ from pathlib import Path
 
 import joblib
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 
 app = Flask(__name__)
+
+CORS(
+    app,
+    resources={
+        r"/check": {
+            "origins": "https://sathvikajeeviguntla-2427.github.io"
+        },
+        r"/chat": {
+            "origins": "https://sathvikajeeviguntla-2427.github.io"
+        }
+    }
+)
 
 # --------------------------------------------------
 # LOAD THE TRAINED ML CHATBOT MODEL
